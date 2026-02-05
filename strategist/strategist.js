@@ -10,16 +10,30 @@ const anthropic = new Anthropic({
 // INPUT (später Telegram / API)
 // --------------------------------------------------
 const USER_PROMPT = `
-Bitte update die Landingpage für Kunde Mueller.
+Bitte update die Landingpage für Müller.
 Neue Headline: "Mehr Kunden in 30 Tagen"
 Neuer CTA: "Jetzt Beratung sichern"
 `;
 
 // --------------------------------------------------
+// CLIENT DISCOVERY
+// --------------------------------------------------
+function listClients() {
+  return fs.readdirSync("clients").filter((name) =>
+    fs.statSync(path.join("clients", name)).isDirectory()
+  );
+}
+
+function detectClientFromPrompt(prompt, clients) {
+  const lower = prompt.toLowerCase();
+  return clients.find((client) => lower.includes(client));
+}
+
+// --------------------------------------------------
 // LOAD CLIENT MEMORY
 // --------------------------------------------------
 function loadClientMemory(clientName) {
-  const basePath = path.join("clients", clientName.toLowerCase());
+  const basePath = path.join("clients", clientName);
 
   const context = JSON.parse(
     fs.readFileSync(path.join(basePath, "context.json"), "utf-8")
@@ -37,7 +51,7 @@ function loadClientMemory(clientName) {
 }
 
 // --------------------------------------------------
-// SYSTEM PROMPT (STRATEGE)
+// SYSTEM PROMPT
 // --------------------------------------------------
 function buildSystemPrompt(clientMemory) {
   return `
@@ -52,44 +66,17 @@ ${JSON.stringify(clientMemory.preferences, null, 2)}
 PROJEKTE:
 ${JSON.stringify(clientMemory.projects, null, 2)}
 
-DEINE AUFGABE:
-- Verstehe den Nutzerwunsch
-- Nutze den obigen Kontext
-- Erzeuge GENAU EINEN Task im folgenden JSON-Schema
+AUFGABE:
+Erzeuge GENAU EINEN Task im bekannten JSON-Schema.
 
 REGELN:
-- Antworte AUSSCHLIESSLICH mit gültigem JSON
-- KEIN erklärender Text
-- KEIN Markdown
+- Antworte NUR mit validem JSON
+- KEIN Text außerhalb des JSON
 - KEINE zusätzlichen Felder
 - Nutze NUR diese Actions:
   - update_file
   - write_changelog
   - deploy_vercel
-
-SCHEMA:
-{
-  "task_type": "update_existing_project",
-  "project": {
-    "name": "string",
-    "path": "string"
-  },
-  "actions": [
-    {
-      "type": "update_file",
-      "file": "index.html",
-      "content": "string"
-    },
-    {
-      "type": "write_changelog",
-      "file": "docs/changelog.md",
-      "entry": "string"
-    },
-    {
-      "type": "deploy_vercel"
-    }
-  ]
-}
 `;
 }
 
@@ -97,9 +84,17 @@ SCHEMA:
 // MAIN
 // --------------------------------------------------
 async function run() {
-  console.log("🧠 Strategen-Agent mit Memory startet...");
+  console.log("🧠 Strategen-Agent (Auto-Client) startet...");
 
-  const clientName = "mueller";
+  const clients = listClients();
+  const clientName = detectClientFromPrompt(USER_PROMPT, clients);
+
+  if (!clientName) {
+    throw new Error("❌ Kein Kunde im Prompt erkannt.");
+  }
+
+  console.log(`📂 Erkannter Kunde: ${clientName}`);
+
   const clientMemory = loadClientMemory(clientName);
 
   const response = await anthropic.messages.create({
@@ -109,15 +104,11 @@ async function run() {
     messages: [{ role: "user", content: USER_PROMPT }],
   });
 
-  const jsonText = response.content[0].text.trim();
-  const task = JSON.parse(jsonText);
+  const task = JSON.parse(response.content[0].text.trim());
 
-  fs.writeFileSync(
-    "tasks/current.json",
-    JSON.stringify(task, null, 2)
-  );
+  fs.writeFileSync("tasks/current.json", JSON.stringify(task, null, 2));
 
-  console.log("📋 Task-Datei mit Kundenkontext erzeugt");
+  console.log("📋 Task-Datei mit automatisch erkanntem Kunden erzeugt");
 }
 
 run().catch(console.error);
