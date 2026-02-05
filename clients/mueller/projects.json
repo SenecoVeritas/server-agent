@@ -1,0 +1,9 @@
+{
+  "projects": [
+    {
+      "name": "landingpage",
+      "path": "vercel-demo",
+      "status": "active"
+    }
+  ]
+}
