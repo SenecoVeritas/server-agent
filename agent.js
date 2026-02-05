@@ -37,3 +37,11 @@ async function run() {
 }
 
 run().catch(console.error);
+
+import { execSync } from "child_process";
+
+// ...
+
+execSync("git add .", { stdio: "inherit" });
+execSync('git commit -m "Agent commit: update"', { stdio: "inherit" });
+execSync("git push", { stdio: "inherit" });
