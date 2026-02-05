@@ -1,75 +1,22 @@
-import fs from "fs";
-import path from "path";
-import { execSync } from "child_process";
-
-// --------------------------------------------------
-// CONFIG
-// --------------------------------------------------
-const TASK_FILE = "tasks/current.json";
-
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
-function loadTask(filePath) {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw);
-}
-
-function updateFile(projectPath, file, content) {
-  const fullPath = path.join(projectPath, file);
-  fs.writeFileSync(fullPath, content);
-  console.log(`✏️  Updated file: ${fullPath}`);
-}
-
-function writeChangelog(file, entry) {
-  const date = new Date().toISOString().split("T")[0];
-  const logEntry = `\n## ${date}\n- ${entry}\n`;
-  fs.appendFileSync(file, logEntry);
-  console.log(`🧾 Changelog updated: ${file}`);
-}
-
-function deployVercel() {
-  console.log("🚀 Deploy triggered via GitHub → Vercel");
-  // Deployment is handled automatically by Vercel on push
-}
-
-function gitCommitAndPush() {
-  execSync("git add .", { stdio: "inherit" });
-  execSync('git commit -m "Agent task execution"', { stdio: "inherit" });
-  execSync("git push", { stdio: "inherit" });
-}
-
-// --------------------------------------------------
-// MAIN EXECUTOR
-// --------------------------------------------------
-function run() {
-  console.log("🤖 Executor v1 startet...");
-
-  const task = loadTask(TASK_FILE);
-  const projectPath = task.project.path;
-
-  for (const action of task.actions) {
-    switch (action.type) {
-      case "update_file":
-        updateFile(projectPath, action.file, action.content);
-        break;
-
-      case "write_changelog":
-        writeChangelog(action.file, action.entry);
-        break;
-
-      case "deploy_vercel":
-        deployVercel();
-        break;
-
-      default:
-        throw new Error(`❌ Unbekannte Action: ${action.type}`);
+{
+  "task_type": "update_existing_project",
+  "project": {
+    "name": "vercel-demo",
+    "path": "vercel-demo"
+  },
+  "actions": [
+    {
+      "type": "update_file",
+      "file": "index.html",
+      "content": "<html>\n  <head>\n    <title>Vercel Demo</title>\n  </head>\n  <body>\n    <h1>Mehr Kunden in 30 Tagen</h1>\n    <p>Jetzt Beratung sichern</p>\n  </body>\n</html>"
+    },
+    {
+      "type": "write_changelog",
+      "file": "docs/changelog.md",
+      "entry": "Updated landing page with new headline and CTA"
+    },
+    {
+      "type": "deploy_vercel"
     }
-  }
-
-  gitCommitAndPush();
-
-  console.log("🏁 Task erfolgreich abgeschlossen");
+  ]
 }
-
-run();
