@@ -1,1 +1,1 @@
-Der Server-Agent funktioniert.
+✅ Update vom Server-Agent – Commit & Deploy Pipeline aktiv.
