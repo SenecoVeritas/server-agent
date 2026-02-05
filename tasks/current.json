@@ -1,19 +1,19 @@
 {
   "task_type": "update_existing_project",
   "project": {
-    "name": "vercel-demo",
+    "name": "landingpage",
     "path": "vercel-demo"
   },
   "actions": [
     {
       "type": "update_file",
       "file": "index.html",
-      "content": "<html>\n  <head>\n    <title>Vercel Demo</title>\n  </head>\n  <body>\n    <h1>Mehr Kunden in 30 Tagen</h1>\n    <p>Jetzt Beratung sichern</p>\n  </body>\n</html>"
+      "content": "<h1>Mehr Kunden in 30 Tagen</h1><a href=\"#\">Jetzt Beratung sichern</a>"
     },
     {
       "type": "write_changelog",
       "file": "docs/changelog.md",
-      "entry": "Updated landing page with new headline and CTA"
+      "entry": "Headline und CTA auf der Landingpage aktualisiert"
     },
     {
       "type": "deploy_vercel"
