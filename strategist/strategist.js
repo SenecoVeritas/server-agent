@@ -59,7 +59,12 @@ function loadClientMemory(clientName) {
     fs.readFileSync(path.join(basePath, "projects.json"), "utf-8")
   );
 
-  return { context, preferences, projects };
+  const history = fs.readFileSync(
+    path.join(basePath, "history.md"),
+    "utf-8"
+  );
+
+  return { context, preferences, projects, history };
 }
 
 // --------------------------------------------------
@@ -78,8 +83,14 @@ ${JSON.stringify(clientMemory.preferences, null, 2)}
 PROJEKTE:
 ${JSON.stringify(clientMemory.projects, null, 2)}
 
+HISTORIE (Vergangene Arbeiten, bitte berücksichtigen):
+${clientMemory.history}
+
 AUFGABE:
-Erzeuge GENAU EINEN Task im bekannten JSON-Schema.
+- Verstehe den Nutzerwunsch
+- Berücksichtige den Kundenkontext UND die Historie
+- Vermeide Wiederholungen
+- Erzeuge GENAU EINEN Task im bekannten JSON-Schema
 
 REGELN:
 - Antworte NUR mit validem JSON
@@ -91,7 +102,6 @@ REGELN:
   - deploy_vercel
 `;
 }
-
 // --------------------------------------------------
 // MAIN
 // --------------------------------------------------

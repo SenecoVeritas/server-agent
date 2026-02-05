@@ -2,8 +2,7 @@
   "tasks": [
     {
       "action": "update_file",
-      "project": "landingpage",
-      "path": "index.html",
+      "file": "vercel-demo/index.html",
       "changes": {
         "headline": "Mehr Kunden in 30 Tagen",
         "cta": "Jetzt Beratung sichern"
@@ -11,7 +10,6 @@
     },
     {
       "action": "write_changelog",
-      "project": "landingpage",
       "changes": [
         "Neue Headline: 'Mehr Kunden in 30 Tagen'",
         "Neuer CTA: 'Jetzt Beratung sichern'"
