@@ -1,22 +1,25 @@
 {
-  "task_type": "update_existing_project",
-  "project": {
-    "name": "landingpage",
-    "path": "vercel-demo"
-  },
-  "actions": [
+  "tasks": [
     {
-      "type": "update_file",
-      "file": "index.html",
-      "content": "<h1>Mehr Kunden in 30 Tagen</h1><a href=\"#\">Jetzt Beratung sichern</a>"
+      "action": "update_file",
+      "project": "landingpage",
+      "path": "index.html",
+      "changes": {
+        "headline": "Mehr Kunden in 30 Tagen",
+        "cta": "Jetzt Beratung sichern"
+      }
     },
     {
-      "type": "write_changelog",
-      "file": "docs/changelog.md",
-      "entry": "Headline und CTA auf der Landingpage aktualisiert"
+      "action": "write_changelog",
+      "project": "landingpage",
+      "changes": [
+        "Neue Headline: 'Mehr Kunden in 30 Tagen'",
+        "Neuer CTA: 'Jetzt Beratung sichern'"
+      ]
     },
     {
-      "type": "deploy_vercel"
+      "action": "deploy_vercel",
+      "project": "landingpage"
     }
   ]
 }

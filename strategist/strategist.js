@@ -24,9 +24,21 @@ function listClients() {
   );
 }
 
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss");
+}
+
 function detectClientFromPrompt(prompt, clients) {
-  const lower = prompt.toLowerCase();
-  return clients.find((client) => lower.includes(client));
+  const normalizedPrompt = normalize(prompt);
+
+  return clients.find((client) =>
+    normalizedPrompt.includes(normalize(client))
+  );
 }
 
 // --------------------------------------------------
