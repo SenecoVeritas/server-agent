@@ -1,23 +1,18 @@
 {
-  "tasks": [
+  "task_type": "create_project",
+  "project": {
+    "name": "mueller-landingpage-v2",
+    "path": "projects/mueller-landingpage-v2",
+    "template": "landingpage-basic"
+  },
+  "actions": [
     {
-      "action": "update_file",
-      "file": "vercel-demo/index.html",
-      "changes": {
-        "headline": "Mehr Kunden in 30 Tagen",
-        "cta": "Jetzt Beratung sichern"
-      }
+      "type": "create_project"
     },
     {
-      "action": "write_changelog",
-      "changes": [
-        "Neue Headline: 'Mehr Kunden in 30 Tagen'",
-        "Neuer CTA: 'Jetzt Beratung sichern'"
-      ]
-    },
-    {
-      "action": "deploy_vercel",
-      "project": "landingpage"
+      "type": "write_changelog",
+      "file": "docs/changelog.md",
+      "entry": "Created new landingpage project for client Mueller."
     }
   ]
 }

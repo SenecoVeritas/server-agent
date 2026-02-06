@@ -1,46 +1,93 @@
 import fs from "fs";
+import path from "path";
 import { execSync } from "child_process";
-import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// --------------------------------------------------
+// CONFIG
+// --------------------------------------------------
+const TASK_FILE = "tasks/current.json";
 
-async function run() {
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
+function loadTask() {
+  return JSON.parse(fs.readFileSync(TASK_FILE, "utf-8"));
+}
+
+function createProject(project) {
+  const { name, path: projectPath, template } = project;
+
+  if (fs.existsSync(projectPath)) {
+    throw new Error(`❌ Projekt existiert bereits: ${projectPath}`);
+  }
+
+  const templatePath = path.join("templates", template);
+
+  if (!fs.existsSync(templatePath)) {
+    throw new Error(`❌ Template nicht gefunden: ${template}`);
+  }
+
+  fs.mkdirSync(projectPath, { recursive: true });
+  execSync(`cp -r ${templatePath}/* ${projectPath}`);
+
+  console.log(`📁 Projekt erstellt: ${name}`);
+}
+
+function updateFile(projectPath, file, content) {
+  const fullPath = path.join(projectPath, file);
+  fs.writeFileSync(fullPath, content);
+  console.log(`✏️ Datei aktualisiert: ${fullPath}`);
+}
+
+function writeChangelog(file, entry) {
+  const date = new Date().toISOString().split("T")[0];
+  fs.appendFileSync(file, `\n## ${date}\n- ${entry}\n`);
+  console.log(`🧾 Changelog ergänzt`);
+}
+
+function deployVercel() {
+  console.log("🚀 Deploy via Vercel (Git Push)");
+}
+
+function gitCommitAndPush() {
+  execSync("git add .", { stdio: "inherit" });
+  execSync('git commit -m "Agent task execution"', { stdio: "inherit" });
+  execSync("git push", { stdio: "inherit" });
+}
+
+// --------------------------------------------------
+// MAIN
+// --------------------------------------------------
+function run() {
   console.log("🤖 Agent startet...");
 
-  // 1️⃣ Minimaler Claude-Test (headless, API)
-  const response = await anthropic.messages.create({
-    model: "claude-3-haiku-20240307",
-    max_tokens: 100,
-    messages: [
-      {
-        role: "user",
-        content: "Antworte nur mit dem Wort OK.",
-      },
-    ],
-  });
+  const task = loadTask();
 
-  console.log("🧠 Claude Response:", response.content[0].text);
+  for (const action of task.actions) {
+    switch (action.type) {
+      case "create_project":
+        createProject(task.project);
+        break;
 
-  // 2️⃣ Datei schreiben (bewusst geändert)
-  fs.writeFileSync(
-    "agent_test.txt",
-    "✅ Update vom Server-Agent – Commit & Deploy Pipeline aktiv.\n"
-  );
+      case "update_file":
+        updateFile(task.project.path, action.file, action.content);
+        break;
 
-  console.log("✅ Datei agent_test.txt erstellt");
+      case "write_changelog":
+        writeChangelog(action.file, action.entry);
+        break;
 
-  // 3️⃣ Git Commit & Push (kontrolliert)
-  execSync("git add .", { stdio: "inherit" });
-  execSync('git commit -m "Agent update: file change"', {
-    stdio: "inherit",
-  });
-  execSync("git push", { stdio: "inherit" });
+      case "deploy_vercel":
+        deployVercel();
+        break;
 
-  console.log("🚀 Commit & Push abgeschlossen");
+      default:
+        throw new Error(`❌ Unbekannte Action: ${action.type}`);
+    }
+  }
+
+  gitCommitAndPush();
   console.log("🏁 Agent fertig");
 }
 
-run().catch(console.error);
-
+run();
