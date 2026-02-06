@@ -10,9 +10,46 @@ const TASK_FILE = "tasks/current.json";
 // --------------------------------------------------
 // HELPERS
 // --------------------------------------------------
+function validateTask(task) {
+  if (!Array.isArray(task.actions)) {
+    throw new Error("❌ Task ungültig: actions fehlt oder ist kein Array");
+  }
+
+  for (const action of task.actions) {
+    switch (action.type) {
+      case "create_project":
+        if (!task.project?.name || !task.project?.path || !task.project?.template) {
+          throw new Error("❌ create_project erfordert project.name, project.path und project.template");
+        }
+        break;
+
+      case "update_file":
+        if (!task.project?.path || !action.file || !action.content) {
+          throw new Error("❌ update_file erfordert project.path, action.file und action.content");
+        }
+        break;
+
+      case "write_changelog":
+        if (!action.file || !action.entry) {
+          throw new Error("❌ write_changelog erfordert file und entry");
+        }
+        break;
+
+      case "deploy_vercel":
+        // nichts zusätzlich nötig
+        break;
+
+      default:
+        throw new Error(`❌ Unbekannte Action: ${action.type}`);
+    }
+  }
+}
+
 function loadTask() {
   return JSON.parse(fs.readFileSync(TASK_FILE, "utf-8"));
 }
+const task = loadTask();
+validateTask(task);
 
 function createProject(project) {
   const { name, path: projectPath, template } = project;
@@ -62,7 +99,9 @@ function run() {
   console.log("🤖 Agent startet...");
 
   const task = loadTask();
-
+if (!Array.isArray(task.actions)) {
+  throw new Error("❌ Task-Format ungültig: actions fehlt oder ist kein Array");
+}
   for (const action of task.actions) {
     switch (action.type) {
       case "create_project":

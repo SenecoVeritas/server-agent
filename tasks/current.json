@@ -1,18 +1,15 @@
 {
-  "task_type": "create_project",
+  "task_type": "update_existing_project",
   "project": {
-    "name": "mueller-landingpage-v2",
-    "path": "projects/mueller-landingpage-v2",
+    "name": "landingpage",
+    "path": "vercel-demo",
     "template": "landingpage-basic"
   },
   "actions": [
     {
-      "type": "create_project"
-    },
-    {
-      "type": "write_changelog",
-      "file": "docs/changelog.md",
-      "entry": "Created new landingpage project for client Mueller."
+      "type": "update_file",
+      "file": "index.html",
+      "content": "<h1>Mehr Leads mit System</h1>"
     }
   ]
 }
