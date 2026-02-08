@@ -3,13 +3,21 @@
   "project": {
     "name": "landingpage",
     "path": "vercel-demo",
-    "template": "landingpage-basic"
+    "status": "active"
   },
   "actions": [
     {
       "type": "update_file",
       "file": "index.html",
       "content": "<h1>Mehr Leads mit System</h1>"
+    },
+    {
+      "type": "write_changelog",
+      "file": "CHANGELOG.md",
+      "entry": "Headline der Landingpage aktualisiert: 'Mehr Leads mit System'"
+    },
+    {
+      "type": "deploy_vercel"
     }
   ]
 }
