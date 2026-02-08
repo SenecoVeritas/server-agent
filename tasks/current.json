@@ -1,20 +1,20 @@
 {
-  "task_type": "update_existing_project",
+  "task_type": "create_project",
   "project": {
-    "name": "landingpage",
+    "name": "landingpage-v2",
     "path": "vercel-demo",
-    "status": "active"
+    "template": "landingpage-basic"
   },
   "actions": [
     {
       "type": "update_file",
       "file": "index.html",
-      "content": "<h1>Mehr Leads mit System</h1>"
+      "content": "<h1>Beratung für KMUs - Mehr qualifizierte Leads</h1>\n<p>Wir unterstützen Ihr Unternehmen dabei, die richtigen Kunden zu gewinnen und Ihren Umsatz zu steigern.</p>\n<a href='#'>Jetzt Termin vereinbaren</a>"
     },
     {
       "type": "write_changelog",
       "file": "CHANGELOG.md",
-      "entry": "Headline der Landingpage aktualisiert: 'Mehr Leads mit System'"
+      "entry": "Neue Landingpage-Version für Müller, mit klarerem Fokus auf qualifizierte Leads"
     },
     {
       "type": "deploy_vercel"

@@ -127,7 +127,11 @@ return (
   "- deploy_vercel\n\n" +
 
   "update_file requires: file, content\n" +
-  "write_changelog requires: file, entry\n" +
+"IMPORTANT:\n" +
+"- content MUST be plain text or HTML string\n" +
+"- NEVER return an object for content\n" +
+"- NEVER return JSON inside content\n\n" + 
+ "write_changelog requires: file, entry\n" +
   "create_project requires: name, path, template=landingpage-basic\n\n" +
 
   "JSON FORMAT:\n" +
@@ -137,7 +141,12 @@ return (
   '  "actions": []\n' +
 "If you include write_changelog, you MUST provide:\n" +
 "- file (e.g. CHANGELOG.md)\n" +
-"- entry (short description of what changed)\n"
+"- entry (short description of what changed)\n" +
+"REUSE INTELLIGENCE:\n" +
+"If the user references another client or project (e.g. 'like Müller'),\n" +
+"analyze that client's structure, strategy and past decisions.\n" +
+"Reuse successful patterns and adapt them.\n" +
+"Do NOT copy blindly, adapt intelligently.\n\n" 
 );
 }
 
@@ -151,14 +160,39 @@ async function run() {
   const intentResult = await detectIntent(USER_PROMPT);
   console.log("🧭 Intent:", intentResult.intent);
 
-  if (intentResult.intent === "UNCLEAR") {
-    console.log("❓ Rückfrage:");
-    console.log(
-      intentResult.follow_up_question ||
-        "Bitte präzisiere deine Anfrage."
-    );
-    return;
-  }
+if (intentResult.intent === "UNCLEAR") {
+  console.log("❓ Anfrage unklar – generiere intelligente Rückfrage...");
+
+  const clients = listClients();
+  const client = detectClientFromPrompt(USER_PROMPT, clients);
+  const memory = client ? loadClientMemory(client) : null;
+
+  const response = await anthropic.messages.create({
+    model: "claude-3-haiku-20240307",
+    max_tokens: 400,
+    system:
+      "You are an AI assistant helping a developer clarify a request.\n" +
+      "Your job is to ask a SMART follow-up question.\n\n" +
+      "If possible, propose multiple choice options.\n" +
+      "Be concrete and practical.\n" +
+      "Do NOT create tasks.\n" +
+      "Do NOT mention JSON.\n",
+
+    messages: [
+      {
+        role: "user",
+        content:
+          "User request:\n" +
+          USER_PROMPT +
+          "\n\nClient context:\n" +
+          (memory ? memory.context : "unknown"),
+      },
+    ],
+  });
+
+  console.log(response.content[0].text);
+  return;
+}
 
   // 2. Client
   const clients = listClients();
@@ -181,7 +215,17 @@ async function run() {
     messages: [{ role: "user", content: USER_PROMPT }],
   });
 
-  const task = JSON.parse(response.content[0].text.trim());
+const raw = response.content[0].text;
+
+const start = raw.indexOf("{");
+const end = raw.lastIndexOf("}");
+
+if (start === -1 || end === -1) {
+  throw new Error("❌ Kein JSON im Output gefunden.");
+}
+
+const jsonString = raw.slice(start, end + 1);
+const task = JSON.parse(jsonString);
 
   fs.writeFileSync("tasks/current.json", JSON.stringify(task, null, 2));
   console.log("📋 Task-Datei erzeugt");
